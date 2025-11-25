@@ -1,0 +1,23 @@
+Voici le texte brut extrait d’une facture.  
+Ce texte peut contenir : erreurs OCR, sauts de ligne, mots coupés, ordre désordonné, caractères spéciaux.
+
+Ton rôle :
+- extraire toutes les informations importantes
+- catégoriser la facture (software, infrastructure, telecom, restauration, consulting, etc.)
+- vérifier les montants HT / TVA / TTC
+- identifier toutes les anomalies potentielles
+- retourner uniquement un JSON strict
+
+Voici le texte de la facture à analyser :
+
+---------------- TEXTE FACTURE ----------------
+{{FACTURE_BRUTE}}
+------------------------------------------------
+
+Consignes :
+- Si une donnée manque → mettre null.
+- Si un montant est incohérent → ajouter dans "anomalies".
+- Ne rien inventer.
+- Ne rien écrire hors du JSON final.
+
+Génère maintenant le JSON demandé.
