@@ -252,6 +252,12 @@ tmp/
 !frontend/public/**
 !frontend/src/assets/**
 
+# Gmail OAuth credentials
+token.json
+credentials.json
+agent_factures/token.json
+agent_factures/credentials.json
+
 # API Keys & Secrets
 .env
 .env.local
