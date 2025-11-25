@@ -1,10 +1,11 @@
 import time
 import json
 import os
-from Agent_facture.utils_facture import read_file, extract_text_from_pdf, extract_text_with_pixtral
+from utils_facture import read_file, extract_text_from_pdf, extract_text_with_pixtral
 from groq import Groq
-from Agent_facture.recup_mail import recup_mail
-from Agent_facture.config_facture import CONTEXT_FILE, PROMPT_FILE, GROQ_API_KEY, MODEL_NAME_analyse, MISTRAL_API_KEY, MODEL_NAME_extract
+from recup_mail import recup_mail
+from config_facture import CONTEXT_FILE, PROMPT_FILE, GROQ_API_KEY, MODEL_NAME_analyse, MISTRAL_API_KEY, MODEL_NAME_extract
+from send_to_backend import send_invoice_to_backend
 
 
 def load_prompt_and_context(invoice: str) -> tuple[str, str]:
@@ -120,19 +121,68 @@ def print_results_analysis(result: dict):
 
 
 if __name__ == "__main__":
-    mails = recup_mail.recup_mail("inbox")
+    # Forcer l'encodage UTF-8 pour Windows
+    import sys
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8')
+    
+    # Token utilisateur (passé par le backend ou dans .env)
+    # IMPORTANT: Récupérer AVANT load_dotenv() pour que le backend puisse le passer
+    USER_TOKEN = os.getenv("USER_TOKEN", "")
+    
+    # Si pas de token dans l'environnement, charger depuis .env local
+    if not USER_TOKEN:
+        from dotenv import load_dotenv
+        load_dotenv()
+        USER_TOKEN = os.getenv("USER_TOKEN", "")
+    
+    if not USER_TOKEN:
+        print("WARNING: USER_TOKEN non défini dans .env")
+        print("    L'agent va analyser les factures mais ne les enverra pas au backend.")
+        print("    Pour activer l'envoi, ajoutez USER_TOKEN=votre_token dans .env\n")
+    
+    mails = recup_mail("inbox")
     for mail in mails:
         print(f"\nMail de {mail['from']} reçu le {mail['date']}")
         for att in mail["attachments"]:
             print(f"  - Pièce jointe : {att['filename']}")
+            
+            # Préparer le texte de la facture
             invoice_text = prepare_invoice_text(att)
             print("    Analyse en cours...")
+            
+            # Analyser avec LLM
             analysis = analyze_text(invoice_text)
+            
             if analysis:
-                print("    Résultat de l'analyse :")
-                #print_results_analysis(analysis)
-                print(analysis)
+                print("    [OK] Analyse terminee")
+                print(f"       Facture: {analysis.get('invoice_number')}")
+                print(f"       Montant TTC: {analysis.get('amounts', {}).get('ttc')} EUR")
+                
+                # Envoyer au backend si token disponible
+                if USER_TOKEN:
+                    pdf_path = f"temp/{att['filename']}"
+                    result = send_invoice_to_backend(
+                        pdf_path=pdf_path,
+                        analysis_data=analysis,
+                        email_id=mail['id'],
+                        email_subject=mail['subject'],
+                        user_token=USER_TOKEN
+                    )
+                    
+                    if result:
+                        print(f"       [UPLOAD] Envoyee au backend (ID: {result.get('id')})")
+                    
+                    # Nettoyer le fichier temp après envoi
+                    try:
+                        os.remove(pdf_path)
+                        print(f"       [CLEAN] Fichier temp supprime")
+                    except:
+                        pass
+                else:
+                    print("       [WARNING] Non envoyee (pas de token)")
             else:
-                print("    Analyse non disponible.")
+                print("    [ERROR] Analyse echouee")
+            
             time.sleep(2)  # Pour éviter de surcharger l'API
         
