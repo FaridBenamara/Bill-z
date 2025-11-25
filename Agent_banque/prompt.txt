@@ -1,0 +1,29 @@
+Voici les informations extraites de la facture :
+
+### FACTURE_JSON
+{{facture_json}}
+
+Voici les lignes du relevé bancaire :
+
+### RELEVE_BANCAIRE
+{{releve_bancaire}}
+
+Effectue un rapprochement bancaire approximatif basé uniquement sur :
+- le fournisseur (matching flou),
+- le montant (écarts tolérés),
+- la date (proximité en mois).
+
+La devise ne doit pas être prise en compte du tout.
+
+Une ligne est correspondante si :
+- la similarité fournisseur est suffisante (≥ 0.60),
+ET
+- le montant ou la date sont rapprochés.
+
+Pour chaque ligne correspondante :
+- liste les différences,
+- fournis les écarts chiffrés dans details_differences,
+- calcule la similarité fournisseur,
+- calcule le niveau de confiance.
+
+Retourne uniquement le JSON demandé.
