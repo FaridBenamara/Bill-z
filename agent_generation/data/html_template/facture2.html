@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Facture Design {{ invoice_number }}</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f0f3f5;
+        font-family: "Montserrat", sans-serif;
+        color: #2b2d42;
+    }
+
+    .invoice-wrapper {
+        max-width: 950px;
+        margin: 40px auto;
+        background: #fff;
+        display: flex;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+
+    .sidebar {
+        background: linear-gradient(180deg, #00b4d8, #0077b6);
+        width: 260px;
+        padding: 40px 30px;
+        color: white;
+    }
+
+    .sidebar h1 {
+        font-weight: 700;
+        font-size: 28px;
+        margin-bottom: 40px;
+    }
+
+    .sidebar .info {
+        line-height: 1.7;
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+
+    .content {
+        flex: 1;
+        padding: 40px 50px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        border-left: 4px solid #00b4d8;
+        padding-left: 8px;
+        color: #0077b6;
+    }
+
+    .block {
+        margin-bottom: 30px;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 14px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    thead {
+        background: #00b4d8;
+        color: white;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+    }
+
+    tbody tr:nth-child(even) {
+        background: #e9f6fb;
+    }
+
+    tbody tr:nth-child(odd) {
+        background: #fff;
+    }
+
+    .totals {
+        margin-top: 40px;
+        text-align: right;
+        font-size: 16px;
+    }
+
+    .totals div {
+        margin: 6px 0;
+    }
+
+    .total-final {
+        font-size: 22px;
+        font-weight: bold;
+        color: #2ec4b6;
+    }
+
+    .footer {
+        margin-top: 60px;
+        text-align: center;
+        color: #888;
+        font-size: 13px;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="invoice-wrapper">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h1>Facture</h1>
+
+        <!-- SELLER (JSON) -->
+        <div class="info">
+            <strong>{{ seller.name }}</strong><br>
+            {{ seller.address }}<br>
+            {{ seller.email }}<br>
+            SIRET : {{ supplier_siret }}<br>
+            TVA : {{ supplier_vat }}
+        </div>
+
+        <div class="info">
+            <strong>Facture N° :</strong> {{ invoice_number }}<br>
+            <strong>Date :</strong> {{ date }}
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- BUYER (NOUS) -->
+        <h2 class="section-title">Client</h2>
+        <div class="block">
+            {{ buyer.name }}<br>
+            {{ buyer.address }}<br>
+            France<br>
+            SIRET : {{ client_siret }}<br>
+            TVA : {{ client_vat }}
+        </div>
+
+        <!-- ITEMS -->
+        <h2 class="section-title">Détails</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qté</th>
+                    <th>PU (€)</th>
+                    <th>Total (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.quantity * item.unit_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- TOTALS -->
+        <div class="totals">
+            <div>Sous-total : <strong>{{ total_ht }} €</strong></div>
+            <div>TVA ({{ tva }}%) :
+                <strong>{{ (total_ht * tva/100) | round(2) }} €</strong>
+            </div>
+            <div>Échéance : <strong>{{ due_date }}</strong></div>
+            <div class="total-final">Total à payer : {{ total_ttc }} €</div>
+        </div>
+
+        <div class="footer">
+            Merci de votre confiance — Paiement par virement sous 30 jours.
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

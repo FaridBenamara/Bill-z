@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Facture Moderne {{ invoice_number }}</title>
+<style>
+    body {
+        font-family: "Poppins", sans-serif;
+        background: #e9ecef;
+        margin: 0;
+        padding: 40px;
+        color: #2d3436;
+    }
+
+    .invoice {
+        max-width: 900px;
+        margin: auto;
+        background: #fff;
+        padding: 50px;
+        border-radius: 14px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #f1f2f6;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .logo {
+        font-size: 28px;
+        font-weight: 700;
+        color: #6c5ce7;
+        letter-spacing: 1px;
+    }
+
+    .invoice-number {
+        text-align: right;
+        font-size: 14px;
+    }
+
+    h2.section-title {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #636e72;
+        border-left: 4px solid #6c5ce7;
+        padding-left: 8px;
+    }
+
+    .info-block {
+        margin-bottom: 30px;
+        line-height: 1.7;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    thead {
+        background: #6c5ce7;
+        color: #fff;
+    }
+
+    th, td {
+        padding: 14px;
+        font-size: 14px;
+        text-align: left;
+    }
+
+    tbody tr:nth-child(even) {
+        background: #f7f7fb;
+    }
+
+    tbody tr:nth-child(odd) {
+        background: #fff;
+    }
+
+    .totals {
+        margin-top: 40px;
+        text-align: right;
+        font-size: 16px;
+    }
+
+    .totals div {
+        margin: 6px 0;
+    }
+
+    .total-final {
+        font-size: 22px;
+        font-weight: bold;
+        color: #00b894;
+    }
+
+    .footer {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 13px;
+        color: #636e72;
+        border-top: 1px solid #dfe6e9;
+        padding-top: 20px;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="invoice">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="logo">Altevia Solutions</div>
+
+        <div class="invoice-number">
+            <strong>Facture N° :</strong> {{ invoice_number }}<br>
+            <strong>Date :</strong> {{ date }}
+        </div>
+    </div>
+
+    <!-- SELLER (NOUS) -->
+    <h2 class="section-title">Émetteur</h2>
+    <div class="info-block">
+        Altevia Solutions<br>
+        {{ seller.address }}<br>
+        France<br>
+        contact@altevia.com<br>
+        SIRET : {{ supplier_siret }}<br>
+        TVA : {{ supplier_vat }}
+    </div>
+
+    <!-- BUYER (JSON) -->
+    <h2 class="section-title">Client</h2>
+    <div class="info-block">
+        {{ buyer.name }}<br>
+        {{ buyer.address }}<br>
+        France<br>
+        SIRET : {{ client_siret }}<br>
+        TVA : {{ client_vat }}
+    </div>
+
+    <!-- ITEMS -->
+    <h2 class="section-title">Détails</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantité</th>
+                <th>PU (€)</th>
+                <th>Total (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price }}</td>
+                <td>{{ item.quantity * item.unit_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- TOTALS -->
+    <div class="totals">
+        <div>Sous-total : <strong>{{ total_ht }} €</strong></div>
+        <div>TVA ({{ tva }}%) : 
+            <strong>{{ (total_ht * tva/100) | round(2) }} €</strong>
+        </div>
+        <div>Échéance : <strong>{{ due_date }}</strong></div>
+        <div class="total-final">Total à payer : {{ total_ttc }} €</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Merci pour votre collaboration.<br>
+        Paiement sous 30 jours – Virement bancaire accepté.
+    </div>
+
+</div>
+
+</body>
+</html>

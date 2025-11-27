@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Facture Soft UI {{ invoice_number }}</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 40px;
+        background: #e6e9ef;
+        font-family: "Poppins", sans-serif;
+        color: #444;
+    }
+
+    .invoice {
+        max-width: 900px;
+        margin: auto;
+        padding: 50px;
+        background: #e6e9ef;
+        border-radius: 30px;
+        box-shadow: 
+            20px 20px 50px #c9ccd2,
+            -20px -20px 50px #ffffff;
+    }
+
+    .title {
+        font-size: 34px;
+        font-weight: 700;
+        color: #5a5d63;
+        text-align: center;
+        letter-spacing: 1px;
+        margin-bottom: 40px;
+        text-shadow: 2px 2px 4px #d0d3d8;
+    }
+
+    .section {
+        padding: 25px;
+        border-radius: 20px;
+        margin-bottom: 35px;
+        background: #e6e9ef;
+        box-shadow: 
+            inset 10px 10px 20px #c9ccd2,
+            inset -10px -10px 20px #ffffff;
+    }
+
+    .section h2 {
+        margin: 0 0 15px 0;
+        font-size: 18px;
+        color: #6c6f75;
+        font-weight: 600;
+    }
+
+    .section p {
+        margin: 6px 0;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        overflow: hidden;
+    }
+
+    thead {
+        background: #d3d7df;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    tbody tr {
+        background: #e6e9ef;
+        box-shadow: 
+            inset 6px 6px 12px #c9ccd2,
+            inset -6px -6px 12px #ffffff;
+    }
+
+    tbody tr + tr {
+        margin-top: 8px;
+    }
+
+    .totals {
+        margin-top: 40px;
+        text-align: right;
+        font-size: 16px;
+    }
+
+    .totals div {
+        margin: 8px 0;
+    }
+
+    .total-final {
+        font-size: 26px;
+        font-weight: bold;
+        color: #27ae60;
+        text-shadow: 1px 1px 3px #d0d3d8;
+    }
+
+    .footer {
+        text-align: center;
+        margin-top: 60px;
+        font-size: 13px;
+        color: #6e6e6e;
+        padding-top: 20px;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="invoice">
+
+    <div class="title">FACTURE</div>
+
+    <!-- SELLER → JSON -->
+    <div class="section">
+        <h2>Émetteur</h2>
+        <p><strong>{{ seller.name }}</strong></p>
+        <p>{{ seller.address }}</p>
+        <p>{{ seller.email }}</p>
+        <p>SIRET : {{ supplier_siret }}<br>TVA : {{ supplier_vat }}</p>
+    </div>
+
+    <!-- Invoice info -->
+    <div class="section">
+        <h2>Informations de Facture</h2>
+        <p><strong>Facture N° :</strong> {{ invoice_number }}</p>
+        <p><strong>Date :</strong> {{ date }}</p>
+        <p><strong>Paiement :</strong> Virement bancaire</p>
+    </div>
+
+    <!-- BUYER → NOUS -->
+    <div class="section">
+        <h2>Client</h2>
+        <p><strong>{{ buyer.name }}</strong></p>
+        <p>{{ buyer.address }}<br>France</p>
+        <p>SIRET : {{ client_siret }}<br>TVA : {{ client_vat }}</p>
+    </div>
+
+    <!-- ITEMS -->
+    <div class="section">
+        <h2>Détails</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qté</th>
+                    <th>PU (€)</th>
+                    <th>Total (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.quantity * item.unit_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TOTALS -->
+    <div class="totals">
+        <div>Sous-total : <strong>{{ total_ht }} €</strong></div>
+        <div>TVA ({{ tva }}%) :
+            <strong>{{ (total_ht * tva/100) | round(2) }} €</strong>
+        </div>
+        <div>Échéance : <strong>{{ due_date }}</strong></div>
+        <div class="total-final">Total à payer : {{ total_ttc }} €</strong></div>
+    </div>
+
+    <div class="footer">
+        Merci pour votre confiance.<br>
+        Paiement sous 30 jours.
+    </div>
+
+</div>
+
+</body>
+</html>

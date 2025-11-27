@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Relevé de compte</title>
+<style>
+    :root {
+        --primary: #153d6f;
+        --accent: #e8effb;
+        --muted: #6b7280;
+        --card: #ffffff;
+        --border: #dce4f4;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: "Inter", "Segoe UI", sans-serif;
+        margin: 0;
+        padding: 40px;
+        background: linear-gradient(135deg, #f5f7fb 0%, #e4ecfb 100%);
+        color: #111827;
+    }
+    .wrapper {
+        max-width: 940px;
+        margin: auto;
+        background: var(--card);
+        border-radius: 28px;
+        padding: 48px;
+        box-shadow:
+            0 20px 45px -20px rgba(15, 23, 42, 0.3),
+            0 0 0 1px rgba(15, 23, 42, 0.03);
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 28px;
+        margin-bottom: 32px;
+    }
+    .bank-name {
+        font-size: 24px;
+        letter-spacing: 0.18em;
+        color: var(--primary);
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .section-title {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--primary);
+        margin: 32px 0 12px;
+    }
+    .section-title::after {
+        content: "";
+        display: block;
+        width: 60px;
+        height: 2px;
+        background: var(--primary);
+        margin-top: 10px;
+    }
+    .info-table, .summary-table, .operations {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .info-table td {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 15px;
+    }
+    .summary-card {
+        background: var(--accent);
+        border-radius: 20px;
+        padding: 28px;
+        border: 1px solid rgba(21, 61, 111, 0.08);
+    }
+    .summary-table td {
+        padding: 9px 0;
+        font-size: 15px;
+        color: var(--muted);
+    }
+    .summary-table td:last-child {
+        text-align: right;
+        color: #111827;
+        font-weight: 600;
+    }
+    .operations {
+        margin-top: 14px;
+        overflow: hidden;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+    }
+    .operations th,
+    .operations td {
+        padding: 16px 18px;
+        font-size: 13px;
+    }
+    .operations th {
+        background: var(--primary);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-weight: 500;
+    }
+    .operations tr:nth-child(even) td {
+        background: #f6f8fc;
+    }
+    .operations tr:hover td {
+        background: rgba(21, 61, 111, 0.08);
+    }
+    .right { text-align: right; font-variant-numeric: tabular-nums; }
+    small {
+        display: block;
+        margin-top: 36px;
+        color: var(--muted);
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header">
+        <div>
+            <div class="bank-name">{{ bank.name }}</div>
+            <div>{{ bank.address }}<br>{{ bank.city }}</div>
+        </div>
+        <div class="period-card">
+            <div class="section-title" style="margin:0;">{{ statement.title }}</div>
+            <div>Période : <strong>{{ statement.period_start }}</strong> au <strong>{{ statement.period_end }}</strong></div>
+            <div>Date d'édition : <strong>{{ statement.generated_at }}</strong></div>
+        </div>
+    </div>
+
+<div class="section-title">Identité du titulaire</div>
+
+<table class="info-table">
+    <tr>
+        <td><strong>Nom :</strong> {{ holder.name }}</td>
+        <td><strong>Numéro de compte :</strong> {{ holder.account_number }}</td>
+    </tr>
+    <tr>
+        <td><strong>Adresse :</strong> {{ holder.address }}</td>
+        <td><strong>IBAN :</strong> {{ holder.iban }}</td>
+    </tr>
+</table>
+
+<div class="section-title">Résumé du compte</div>
+
+<div class="summary-card">
+    <table class="summary-table">
+        <tr>
+            <td>Solde au {{ summary.date_start }} :</td>
+            <td>{{ summary.opening_balance }}</td>
+        </tr>
+        <tr>
+            <td>Total des débits :</td>
+            <td>{{ summary.total_debits }}</td>
+        </tr>
+        <tr>
+            <td>Total des crédits :</td>
+            <td>{{ summary.total_credits }}</td>
+        </tr>
+        <tr>
+            <td><strong>Solde au {{ summary.date_end }} :</strong></td>
+            <td><strong>{{ summary.closing_balance }}</strong></td>
+        </tr>
+    </table>
+</div>
+
+<div class="section-title">Opérations du mois</div>
+
+<table class="operations">
+    <tr>
+        <th>Date</th>
+        <th>Opération</th>
+        <th class="right">Débit</th>
+        <th class="right">Crédit</th>
+        <th class="right">Solde</th>
+    </tr>
+    {% for op in operations %}
+    <tr>
+        <td>{{ op.date }}</td>
+        <td>{{ op.label }}</td>
+        <td class="right">{{ op.debit if op.debit else '–' }}</td>
+        <td class="right">{{ op.credit if op.credit else '–' }}</td>
+        <td class="right">{{ op.balance }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br><br>
+<small>{{ footer_note }}</small>
+</div>
+</body>
+</html>

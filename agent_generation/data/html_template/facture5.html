@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Facture Premium {{ invoice_number }}</title>
+
+<style>
+    /* --- Global --- */
+    body {
+        margin: 0;
+        padding: 60px 20px;
+        font-family: "Inter", "Segoe UI", sans-serif;
+        background: #ffffff;
+        color: #333;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+        background: #fff;
+        padding: 60px 70px;
+        border-radius: 12px;
+        border: 1px solid #eaeaea;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+    }
+
+    /* --- Header --- */
+    .top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 35px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .brand {
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: #111;
+    }
+
+    .invoice-info {
+        text-align: right;
+        font-size: 14px;
+        color: #555;
+        line-height: 1.6;
+    }
+
+    /* --- Sections --- */
+    .section {
+        margin-top: 40px;
+    }
+
+    .section-title {
+        font-size: 17px;
+        color: #222;
+        font-weight: 600;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .block {
+        font-size: 14px;
+        line-height: 1.8;
+        color: #555;
+        padding: 18px 25px;
+        border-radius: 10px;
+        border: 1px solid #efefef;
+        background: #fafafa;
+    }
+
+    /* --- Table --- */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+    }
+
+    thead {
+        background: #f8f8f8;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        text-align: left;
+        padding: 14px 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        letter-spacing: 0.3px;
+    }
+
+    td {
+        padding: 16px 10px;
+        font-size: 14px;
+        border-bottom: 1px solid #f0f0f0;
+        color: #333;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Totals */
+    .totals {
+        margin-top: 40px;
+        text-align: right;
+        font-size: 15px;
+        line-height: 1.9;
+    }
+
+    .totals strong {
+        color: #111;
+    }
+
+    .total-final {
+        font-size: 26px;
+        font-weight: 700;
+        margin-top: 8px;
+        color: #000;
+    }
+
+    /* Footer */
+    .footer {
+        margin-top: 70px;
+        text-align: center;
+        font-size: 13px;
+        color: #777;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="top-header">
+        <div class="brand">{{ seller.name }}</div>
+
+        <div class="invoice-info">
+            Facture N° : {{ invoice_number }}<br>
+            Date : {{ date }}<br>
+            Conditions : Paiement sous 30 jours
+        </div>
+    </div>
+
+    <!-- SELLER (JSON) -->
+    <div class="section">
+        <div class="section-title">Émetteur</div>
+        <div class="block">
+            <strong>{{ seller.name }}</strong><br>
+            {{ seller.address }}<br>
+            {{ seller.email }}<br>
+            SIRET : {{ supplier_siret }}<br>
+            TVA : {{ supplier_vat }}
+        </div>
+    </div>
+
+    <!-- BUYER = NOUS -->
+    <div class="section">
+        <div class="section-title">Client</div>
+        <div class="block">
+            <strong>{{ buyer.name }}</strong><br>
+            {{ buyer.address }}<br>
+            France<br>
+            SIRET : {{ client_siret }}<br>
+            TVA : {{ client_vat }}
+        </div>
+    </div>
+
+    <!-- ITEMS -->
+    <div class="section">
+        <div class="section-title">Détails</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qté</th>
+                    <th>PU (€)</th>
+                    <th>Total (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.quantity * item.unit_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TOTALS -->
+    <div class="totals">
+        Sous-total : <strong>{{ total_ht }} €</strong><br>
+        TVA ({{ tva }}%) : <strong>{{ (total_ht * tva/100) | round(2) }} €</strong><br>
+        Échéance : <strong>{{ due_date }}</strong><br>
+
+        <div class="total-final">Total à payer : {{ total_ttc }} €</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Merci pour votre confiance.  
+        Pour toute question : contact@altevia.com
+    </div>
+
+</div>
+
+</body>
+</html>

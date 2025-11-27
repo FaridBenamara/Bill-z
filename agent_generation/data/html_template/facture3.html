@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Facture Élégante {{ invoice_number }}</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 40px;
+        background: #f8f2ec;
+        font-family: "Inter", sans-serif;
+        color: #3a3a3a;
+    }
+
+    .invoice {
+        max-width: 900px;
+        margin: auto;
+        background: #ffffff;
+        padding: 45px;
+        border-radius: 16px;
+        box-shadow: 0 10px 45px rgba(0,0,0,0.08);
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        align-items: center;
+    }
+
+    .title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #d67a32;
+        letter-spacing: 1px;
+    }
+
+    .invoice-info {
+        text-align: right;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #555;
+    }
+
+    .section {
+        margin-bottom: 35px;
+        background: #fff7ef;
+        padding: 20px 25px;
+        border-radius: 12px;
+        border-left: 6px solid #d67a32;
+    }
+
+    .section h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        color: #d67a32;
+    }
+
+    .section p {
+        margin: 5px 0;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    thead {
+        background: #d67a32;
+        color: white;
+    }
+
+    th, td {
+        padding: 14px;
+        text-align: left;
+    }
+
+    tbody tr:nth-child(even) {
+        background: #fcefe3;
+    }
+
+    tbody tr:nth-child(odd) {
+        background: #fff;
+    }
+
+    .totals {
+        margin-top: 40px;
+        text-align: right;
+        font-size: 16px;
+    }
+
+    .totals div {
+        margin: 6px 0;
+    }
+
+    .total-final {
+        font-size: 24px;
+        font-weight: bold;
+        color: #27ae60;
+    }
+
+    .footer {
+        text-align: center;
+        font-size: 13px;
+        margin-top: 50px;
+        color: #7a7a7a;
+        border-top: 1px solid #ddd;
+        padding-top: 20px;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="invoice">
+
+    <div class="header">
+        <div class="title">FACTURE</div>
+
+        <div class="invoice-info">
+            Facture N° : {{ invoice_number }}<br>
+            Date : {{ date }}<br>
+            Paiement : Virement bancaire
+        </div>
+    </div>
+
+    <!-- SELLER = JSON -->
+    <div class="section">
+        <h2>Émetteur</h2>
+        <p><strong>{{ seller.name }}</strong></p>
+        <p>{{ seller.address }}</p>
+        <p>{{ seller.email }}</p>
+        <p>SIRET : {{ supplier_siret }}<br>TVA : {{ supplier_vat }}</p>
+    </div>
+
+    <!-- BUYER = NOUS (fixe) -->
+    <div class="section">
+        <h2>Client</h2>
+        <p><strong>{{ buyer.name }}</strong></p>
+        <p>{{ buyer.address }}<br>France</p>
+        <p>SIRET : {{ client_siret }}<br>TVA : {{ client_vat }}</p>
+    </div>
+
+    <!-- ITEMS -->
+    <div class="section">
+        <h2>Détails de la prestation</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qté</th>
+                    <th>PU (€)</th>
+                    <th>Total (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.quantity * item.unit_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TOTALS -->
+    <div class="totals">
+        <div>Sous-total : <strong>{{ total_ht }} €</strong></div>
+        <div>TVA ({{ tva }}%) :
+            <strong>{{ (total_ht * tva/100) | round(2) }} €</strong>
+        </div>
+        <div>Échéance : <strong>{{ due_date }}</strong></div>
+        <div class="total-final">Total à payer : {{ total_ttc }} €</div>
+    </div>
+
+  
+
+</div>
+
+</body>
+</html>

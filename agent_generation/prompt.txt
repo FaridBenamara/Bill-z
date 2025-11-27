@@ -1,0 +1,54 @@
+Génère 5 factures différentes, chacune correspondant à un achat fournisseur.
+Chaque facture doit respecter strictement la structure définie dans le contexte.
+
+Le résultat final doit être un unique JSON de la forme :
+
+{
+  "invoice_1": { ... },
+  "invoice_2": { ... },
+  ...
+  "invoice_5": { ... }
+}
+
+
+Consignes supplémentaires :
+
+IMPORTANT : Toutes les 5 factures doivent avoir le MÊME fournisseur (seller).
+Invente UN SEUL fournisseur crédible et utilise-le pour toutes les factures.
+Le seller.name, seller.address et seller.email doivent être identiques dans toutes les factures.
+Ses identifiants légaux doivent l’être aussi :
+- supplier_siret : SIRET du fournisseur (identique sur les 5 factures)
+- supplier_vat : TVA intracommunautaire du fournisseur (identique sur les 5 factures)
+
+Buyer doit TOUJOURS être EXACTEMENT (JAMAIS varier) :
+
+"name": "Altevia Solutions" (TOUJOURS exactement ce nom, jamais varier)
+
+"address": "12 Rue des Entrepreneurs, 75015 Paris, France" (TOUJOURS cette adresse exacte, JAMAIS varier, JAMAIS inventer d'autre adresse)
+
+"client_siret": "123 456 789 00012" (valeur fixe, jamais varier)
+
+"client_vat": "FR12 345678900" (valeur fixe, jamais varier)
+
+Les items doivent être réalistes, variés, et liés à un achat professionnel (matériel, prestations, logiciels, maintenance, licences, sous-traitance…).
+
+RÈGLE CRITIQUE POUR LES DATES :
+- TOUTES les dates doivent être en août 2017 uniquement
+- Format : "2017-08-XX" où XX est un jour entre 01 et 31
+- Exemples : "2017-08-15", "2017-08-03", "2017-08-28"
+- JAMAIS de dates en 2025, 2024, etc. UNIQUEMENT août 2017
+
+due_date = date + 30 jours calendaires (format "YYYY-MM-DD"). Exemple : date 2017-08-02 → due_date 2017-09-01. Toujours recalculer ce champ.
+
+Les montants doivent être cohérents, et les totaux ht / tva / ttc correctement calculés.
+
+RÈGLE CRITIQUE POUR LA TVA :
+- Le champ "tva" doit être un NOMBRE entre 5 et 20 uniquement (ex: 5, 10, 15, 20)
+- tva = 5 signifie 5%, tva = 20 signifie 20%
+- INTERDIT d'utiliser des valeurs comme 200, 720, 2000, etc.
+- Le calcul correct est : total_ttc = total_ht × (1 + tva/100)
+- Exemple : si total_ht = 100 et tva = 20, alors total_ttc = 120
+
+N'ajoute aucun commentaire, aucune phrase, rien d'autre que le JSON final.
+
+Le JSON doit être valide et parfaitement structuré et contenir les champs due_date, supplier_siret, supplier_vat, client_siret et client_vat pour chaque facture.

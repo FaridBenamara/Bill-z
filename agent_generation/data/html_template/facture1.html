@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Facture {{ invoice_number }}</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background: #f5f6fa;
+        margin: 0;
+        padding: 40px;
+        color: #333;
+    }
+
+    .invoice-container {
+        background: white;
+        max-width: 850px;
+        margin: auto;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 40px;
+        letter-spacing: 1px;
+        color: #2c3e50;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+    }
+
+    .logo {
+        font-size: 26px;
+        font-weight: bold;
+        color: #3498db;
+    }
+
+    .company-info, .client-info {
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 30px;
+    }
+
+    table thead {
+        background: #3498db;
+        color: #fff;
+    }
+
+    table th, table td {
+        padding: 14px;
+        text-align: left;
+    }
+
+    table tbody tr:nth-child(even) {
+        background: #ecf0f1;
+    }
+
+    .total-section {
+        margin-top: 30px;
+        width: 100%;
+        text-align: right;
+    }
+
+    .total-section div {
+        font-size: 18px;
+        margin: 6px 0;
+    }
+
+    .grand-total {
+        font-size: 22px;
+        font-weight: bold;
+        color: #27ae60;
+    }
+
+    .footer {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 13px;
+        color: #777;
+    }
+</style>
+</head>
+<body>
+
+<div class="invoice-container">
+
+    <h1>FACTURE</h1>
+
+    <div class="header">
+        <div class="logo">{{ seller.name }}</div>
+
+        <div class="company-info">
+            {{ seller.address }}<br>
+            {{ seller.email }}<br>
+            SIRET : {{ supplier_siret }}<br>
+            TVA : {{ supplier_vat }}
+        </div>
+    </div>
+
+    <div class="client-info">
+        <strong>Facturé à :</strong><br>
+        {{ buyer.name }}<br>
+        {{ buyer.address }}<br>
+        France<br>
+        SIRET : {{ client_siret }}<br>
+        TVA : {{ client_vat }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantité</th>
+                <th>Prix Unitaire (€)</th>
+                <th>Total (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price }}</td>
+                <td>{{ item.quantity * item.unit_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        <div>Sous-total : <strong>{{ total_ht }} €</strong></div>
+        <div>TVA ({{ tva }}%) : <strong>{{ (total_ht * tva/100) | round(2) }} €</strong></div>
+        <div>DATE Échéance : <strong>{{ due_date }}</strong></div>
+        <div class="grand-total">Total à payer : {{ total_ttc }} €</div>
+    </div>
+
+    <div class="footer">
+        Merci pour votre confiance.<br>
+        Paiement dû sous 30 jours.
+    </div>
+
+</div>
+
+</body>
+</html>
