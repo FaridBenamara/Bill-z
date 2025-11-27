@@ -30,12 +30,7 @@ class InvoiceScanner:
     def __init__(self, user_id: int, db: Session):
         self.user_id = user_id
         self.db = db
-        try:
-            self.groq_client = Groq(api_key=settings.GROQ_API_KEY)
-        except TypeError:
-            # Fallback pour les anciennes versions de groq
-            from groq import Client as GroqClient
-            self.groq_client = GroqClient(api_key=settings.GROQ_API_KEY)
+        self.groq_client = Groq(api_key=settings.GROQ_API_KEY)
         self.context = self._load_context()
         self.prompt_template = self._load_prompt_template()
     
@@ -45,8 +40,7 @@ class InvoiceScanner:
         try:
             with open(context_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except Exception as e:
-            print(f"[WARNING] Impossible de charger context.txt: {e}")
+        except Exception:
             return "Tu es un agent spécialisé dans l'analyse de factures."
     
     def _load_prompt_template(self) -> str:
@@ -55,8 +49,7 @@ class InvoiceScanner:
         try:
             with open(prompt_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except Exception as e:
-            print(f"[WARNING] Impossible de charger prompt.txt: {e}")
+        except Exception:
             return "Analyse cette facture: {{FACTURE_BRUTE}}"
     
     def _get_gmail_service(self):
@@ -111,8 +104,7 @@ class InvoiceScanner:
             for page in reader.pages:
                 text += page.extract_text() + "\n"
             return text.strip()
-        except Exception as e:
-            print(f"[ERROR] Extraction PDF: {e}")
+        except Exception:
             return ""
     
     def _analyze_invoice_text(self, invoice_text: str) -> Optional[Dict]:
@@ -135,8 +127,7 @@ class InvoiceScanner:
             raw_content = response.choices[0].message.content
             return json.loads(raw_content)
         
-        except Exception as e:
-            print(f"[ERROR] Analyse Groq: {e}")
+        except Exception:
             return None
     
     def _get_gmail_messages(self, service, max_results: int = 50) -> List[Dict]:
@@ -145,7 +136,6 @@ class InvoiceScanner:
             emails = []
             
             # Scanner INBOX (factures reçues)
-            print("[SCAN] Scan INBOX (factures reçues)...")
             inbox_results = service.users().messages().list(
                 userId='me',
                 labelIds=['INBOX'],
@@ -154,7 +144,6 @@ class InvoiceScanner:
             ).execute()
             
             inbox_messages = inbox_results.get('messages', [])
-            print(f"[SCAN] {len(inbox_messages)} messages trouvés dans INBOX")
             
             for msg in inbox_messages:
                 msg_id = msg['id']
@@ -185,7 +174,6 @@ class InvoiceScanner:
                     })
             
             # Scanner SENT (factures envoyées)
-            print("[SCAN] Scan SENT (factures envoyées)...")
             sent_results = service.users().messages().list(
                 userId='me',
                 labelIds=['SENT'],
@@ -194,7 +182,6 @@ class InvoiceScanner:
             ).execute()
             
             sent_messages = sent_results.get('messages', [])
-            print(f"[SCAN] {len(sent_messages)} messages trouvés dans SENT")
             
             for msg in sent_messages:
                 msg_id = msg['id']
@@ -226,8 +213,7 @@ class InvoiceScanner:
             
             return emails
         
-        except Exception as e:
-            print(f"[ERROR] Récupération emails: {e}")
+        except Exception:
             return []
     
     def _extract_attachments(self, service, msg_id: str, payload: Dict) -> List[Dict]:
@@ -254,8 +240,8 @@ class InvoiceScanner:
                                 'filename': filename,
                                 'data': file_data
                             })
-                        except Exception as e:
-                            print(f"[ERROR] Téléchargement pièce jointe {filename}: {e}")
+                        except Exception:
+                            pass
                 
                 if part.get('parts'):
                     explore_parts(part['parts'])
@@ -281,26 +267,15 @@ class InvoiceScanner:
         }
         
         try:
-            # Connexion Gmail
-            print(f"[SCAN] Connexion à Gmail...")
             service = self._get_gmail_service()
-            
-            # Récupérer les emails
-            print(f"[SCAN] Récupération des emails...")
             emails = self._get_gmail_messages(service, max_results=max_emails)
             stats['emails_scanned'] = len(emails)
             
-            print(f"[SCAN] {len(emails)} emails avec pièces jointes trouvés")
-            
             # Traiter chaque email
             for email in emails:
-                print(f"\n[EMAIL] De: {email['from']}")
-                print(f"[EMAIL] Sujet: {email['subject']}")
-                
                 for attachment in email['attachments']:
                     stats['invoices_found'] += 1
                     filename = attachment['filename']
-                    print(f"  [PDF] {filename}")
                     
                     try:
                         # Vérifier si déjà traité (via email_id)
@@ -310,31 +285,25 @@ class InvoiceScanner:
                         ).first()
                         
                         if existing:
-                            print(f"    [SKIP] Déjà traité")
                             continue
                         
                         # Extraire le texte
-                        print(f"    [EXTRACT] Extraction du texte...")
                         invoice_text = self._extract_text_from_pdf(attachment['data'])
                         
                         if not invoice_text:
-                            print(f"    [ERROR] Extraction échouée")
                             stats['errors'].append(f"{filename}: Extraction texte échouée")
                             continue
                         
                         # Analyser avec LLM
-                        print(f"    [ANALYZE] Analyse avec LLM...")
                         analysis = self._analyze_invoice_text(invoice_text)
                         
                         if not analysis:
-                            print(f"    [ERROR] Analyse échouée")
                             stats['errors'].append(f"{filename}: Analyse LLM échouée")
                             continue
                         
                         stats['invoices_processed'] += 1
                         
                         # Sauvegarder le PDF
-                        print(f"    [SAVE] Sauvegarde du PDF...")
                         import io
                         file_info = save_invoice_pdf(
                             user_id=self.user_id,
@@ -343,9 +312,7 @@ class InvoiceScanner:
                         )
                         
                         # Créer l'entrée en base
-                        print(f"    [DB] Enregistrement en base...")
-                        invoice_type = email.get('type', 'entrante')  # Utiliser le type de l'email
-                        print(f"    [TYPE] Type de facture: {invoice_type}")
+                        invoice_type = email.get('type', 'entrante')
                         
                         new_invoice = Invoice(
                             user_id=self.user_id,
@@ -370,17 +337,15 @@ class InvoiceScanner:
                         self.db.refresh(new_invoice)
                         
                         stats['invoices_saved'] += 1
-                        print(f"    [OK] Facture #{analysis.get('invoice_number')} enregistrée (ID: {new_invoice.id})")
                     
                     except Exception as e:
-                        print(f"    [ERROR] {e}")
                         stats['errors'].append(f"{filename}: {str(e)}")
                         self.db.rollback()
             
             return stats
         
         except Exception as e:
-            print(f"[ERROR] Scan global: {e}")
             stats['errors'].append(f"Erreur globale: {str(e)}")
+            return stats
             return stats
 

@@ -40,7 +40,6 @@ function Dashboard({ setAuth }) {
       setTransactions(transactionsRes.data.slice(0, 5)); // 5 dernières
     } catch (err) {
       setError('Erreur lors du chargement des données');
-      console.error(err);
     } finally {
       setLoading(false);
     }

@@ -49,9 +49,12 @@ def run_invoice_agent(user_token: str) -> Dict:
         uploaded_count = output.count("[UPLOAD] Envoyee au backend")
         
         # Log pour debug
-        print(f"[AGENT] Return code: {result.returncode}")
-        print(f"[AGENT] STDOUT: {result.stdout}")
-        print(f"[AGENT] STDERR: {result.stderr}")
+        from app.core.logger import logger
+        logger.debug(f"Agent return code: {result.returncode}")
+        if result.stdout:
+            logger.debug(f"Agent stdout: {result.stdout}")
+        if result.stderr:
+            logger.warning(f"Agent stderr: {result.stderr}")
         
         return {
             "success": result.returncode == 0,

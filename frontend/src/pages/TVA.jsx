@@ -35,7 +35,6 @@ function TVA({ setAuth }) {
       setInvoices(invoicesRes.data);
     } catch (err) {
       setError('Erreur lors du chargement des données TVA');
-      console.error(err);
     } finally {
       setLoading(false);
     }

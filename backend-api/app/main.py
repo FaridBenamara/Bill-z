@@ -6,16 +6,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base
+from app.core.logger import logger
 from app.api import auth, invoices, transactions, optimisation
 from app.models import User, Invoice, Transaction  # Import pour créer les tables
 
 # Créer les tables PostgreSQL
 try:
     Base.metadata.create_all(bind=engine)
-    print("✅ PostgreSQL database connected and tables created!")
+    logger.info("PostgreSQL database connected and tables created")
 except Exception as e:
-    print(f"⚠️ Warning: Could not connect to PostgreSQL: {e}")
-    print("⚠️ The API will start but database operations will fail.")
+    logger.warning(f"Could not connect to PostgreSQL: {e}")
+    logger.warning("The API will start but database operations will fail")
 
 # Application FastAPI
 app = FastAPI(

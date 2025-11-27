@@ -17,11 +17,7 @@ class OptimisationService:
     """Service d'analyse et d'optimisation comptable"""
     
     def __init__(self):
-        try:
-            self.groq_client = Groq(api_key=settings.GROQ_API_KEY)
-        except TypeError:
-            from groq import Client as GroqClient
-            self.groq_client = GroqClient(api_key=settings.GROQ_API_KEY)
+        self.groq_client = Groq(api_key=settings.GROQ_API_KEY)
         
         self.context = self._load_context()
         self.prompt_template = self._load_prompt_template()
@@ -32,8 +28,7 @@ class OptimisationService:
         try:
             with open(context_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except Exception as e:
-            print(f"[WARNING] Impossible de charger context.txt: {e}")
+        except Exception:
             return "Tu es un agent d'optimisation comptable."
     
     def _load_prompt_template(self) -> str:
@@ -42,8 +37,7 @@ class OptimisationService:
         try:
             with open(prompt_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except Exception as e:
-            print(f"[WARNING] Impossible de charger prompt.txt: {e}")
+        except Exception:
             return "Factures: {{factures_json}}\n\nRapprochements: {{rapprochements_json}}"
     
     def _prepare_facture_data(self, invoice: Invoice) -> Dict:
@@ -142,15 +136,11 @@ class OptimisationService:
             factures_json = json.dumps(factures_data, ensure_ascii=False, indent=2)
             rapprochements_json = json.dumps(rapprochements_data, ensure_ascii=False, indent=2)
             
-            print(f"[OPTIMISATION] Analyse de {len(factures_data)} factures")
-            
             # Créer le prompt avec la date du jour
             today = datetime.now().strftime("%Y-%m-%d")
             prompt = self.prompt_template.replace("{{date_aujourdhui}}", today)
             prompt = prompt.replace("{{factures_json}}", factures_json)
             prompt = prompt.replace("{{rapprochements_json}}", rapprochements_json)
-            
-            print(f"[OPTIMISATION] Date du jour: {today}")
             
             # Appel à Groq
             response = self.groq_client.chat.completions.create(
@@ -165,12 +155,9 @@ class OptimisationService:
             raw_content = response.choices[0].message.content
             result = json.loads(raw_content)
             
-            print(f"[OPTIMISATION] Analyse terminée avec succès")
-            
             return result
         
-        except Exception as e:
-            print(f"[ERROR] Optimisation: {e}")
+        except Exception:
             return None
     
     def get_tva_analysis(self, user_id: int, db: Session) -> Dict:
@@ -203,8 +190,7 @@ class OptimisationService:
                 "conseil": "Pensez à déclarer votre TVA avant la date limite." if tva_a_payer > 0 else "Vous êtes en crédit de TVA."
             }
         
-        except Exception as e:
-            print(f"[ERROR] TVA analysis: {e}")
+        except Exception:
             return {
                 "tva_collectee": 0.0,
                 "tva_deductible": 0.0,

@@ -36,7 +36,6 @@ function Transactions({ setAuth }) {
       setError(null);
     } catch (err) {
       setError('Erreur lors du chargement des transactions');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -90,7 +89,6 @@ function Transactions({ setAuth }) {
         success: false,
         message: err.response?.data?.detail || 'Erreur lors de l\'upload'
       });
-      console.error(err);
     } finally {
       setUploading(false);
       // Reset file input
@@ -111,7 +109,6 @@ function Transactions({ setAuth }) {
       calculateStats(transactions.filter(t => t.id !== transactionId));
     } catch (err) {
       alert('Erreur lors de la suppression');
-      console.error(err);
     }
   };
 

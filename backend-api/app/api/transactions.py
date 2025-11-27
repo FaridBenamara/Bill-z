@@ -77,7 +77,6 @@ async def upload_transactions(
                         except ValueError:
                             continue
                     else:
-                        print(f"[WARNING] Date invalide: {row['date']}")
                         continue
                 else:
                     transaction_date = pd.to_datetime(row['date']).date()
@@ -98,7 +97,6 @@ async def upload_transactions(
                 transactions_created += 1
             
             except Exception as e:
-                print(f"[ERROR] Erreur ligne: {e}")
                 continue
         
         db.commit()
@@ -198,9 +196,6 @@ async def reconcile_all_invoices(
             detail="Aucune transaction disponible pour le rapprochement"
         )
     
-    print(f"\n[RECONCILE ALL] Démarrage du rapprochement automatique")
-    print(f"  - {len(invoices)} factures")
-    print(f"  - {len(transactions)} transactions disponibles\n")
     
     service = BankReconciliationService()
     results = []
@@ -222,7 +217,6 @@ async def reconcile_all_invoices(
         ).first()
         
         if already_reconciled:
-            print(f"[SKIP] Facture {invoice.id} déjà rapprochée")
             continue
         
         stats["processed"] += 1
@@ -242,7 +236,6 @@ async def reconcile_all_invoices(
         ).all()
         
         if not available_transactions:
-            print(f"[INFO] Plus de transactions disponibles")
             break
         
         bank_transactions = [
@@ -298,12 +291,10 @@ async def reconcile_all_invoices(
                             }
                             db.commit()
                             stats["auto_confirmed"] += 1
-                            print(f"[AUTO-CONFIRM] Facture {invoice.id} ↔ Transaction {transaction.id} (confiance: {confidence:.0%})")
                         else:
                             stats["manual_review"] += 1
                     else:
                         stats["manual_review"] += 1
-                        print(f"[MANUAL] Facture {invoice.id} nécessite validation manuelle (confiance: {confidence:.0%})")
                     
                     results.append({
                         "invoice_id": invoice.id,
@@ -320,12 +311,6 @@ async def reconcile_all_invoices(
         else:
             stats["no_match"] += 1
     
-    print(f"\n[RECONCILE ALL] Terminé")
-    print(f"  - Traitées: {stats['processed']}")
-    print(f"  - Correspondances: {stats['matched']}")
-    print(f"  - Auto-confirmées: {stats['auto_confirmed']}")
-    print(f"  - Revue manuelle: {stats['manual_review']}")
-    print(f"  - Aucune correspondance: {stats['no_match']}\n")
     
     return {
         "success": True,
@@ -407,19 +392,9 @@ async def reconcile_invoice(
             detail="Erreur lors du rapprochement"
         )
     
-    # Debug: afficher le résultat brut du LLM
-    print(f"[DEBUG] Résultat du rapprochement: {json.dumps(result, indent=2, ensure_ascii=False)}")
-    
     # Ajouter les transaction_ids aux lignes correspondantes
     if result.get('lignes_correspondantes'):
-        print(f"\n{'='*60}")
-        print(f"[RECONCILIATION] Traitement de {len(result['lignes_correspondantes'])} ligne(s)")
-        print(f"{'='*60}\n")
-        
-        for idx, ligne in enumerate(result['lignes_correspondantes']):
-            print(f"\n--- Ligne {idx + 1} ---")
-            print(f"Contenu brut: {json.dumps(ligne, indent=2, ensure_ascii=False)}")
-            
+        for ligne in result['lignes_correspondantes']:
             # Extraire les valeurs avec plusieurs variantes possibles
             ligne_date = (
                 ligne.get('date') or 
@@ -441,11 +416,6 @@ async def reconcile_invoice(
                 ''
             )
             
-            print(f"Valeurs extraites:")
-            print(f"  - Date: '{ligne_date}'")
-            print(f"  - Amount: {ligne_amount}")
-            print(f"  - Vendor: '{ligne_vendor}'")
-            
             # Chercher la transaction correspondante
             matched = False
             
@@ -460,8 +430,6 @@ async def reconcile_invoice(
                 if date_match and amount_match and vendor_match:
                     ligne['transaction_id'] = t.id
                     matched = True
-                    print(f"✓ MATCH EXACT avec transaction {t.id}")
-                    print(f"  {t.date} | {t.amount}€ | {t.vendor}")
                     break
             
             # Stratégie 2: Match par montant + date (vendor peut différer légèrement)
@@ -474,8 +442,6 @@ async def reconcile_invoice(
                     if date_match and amount_match:
                         ligne['transaction_id'] = t.id
                         matched = True
-                        print(f"✓ MATCH PAR DATE+MONTANT avec transaction {t.id}")
-                        print(f"  {t.date} | {t.amount}€ | {t.vendor}")
                         break
             
             # Stratégie 3: Match par montant seul (dernier recours)
@@ -484,15 +450,7 @@ async def reconcile_invoice(
                     if abs(t.amount - ligne_amount) < 0.01:
                         ligne['transaction_id'] = t.id
                         matched = True
-                        print(f"⚠ MATCH PAR MONTANT SEUL avec transaction {t.id}")
-                        print(f"  {t.date} | {t.amount}€ | {t.vendor}")
                         break
-            
-            if not matched:
-                print(f"✗ AUCUN MATCH TROUVÉ")
-                print(f"  Recherché: {ligne_date} | {ligne_amount}€ | {ligne_vendor}")
-        
-        print(f"\n{'='*60}\n")
     
     return result
 

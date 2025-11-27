@@ -29,7 +29,6 @@ function Factures({ setAuth }) {
       setError(null);
     } catch (err) {
       setError('Erreur lors du chargement des factures');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -50,7 +49,6 @@ function Factures({ setAuth }) {
       setTimeout(() => window.URL.revokeObjectURL(url), 100);
     } catch (err) {
       alert('Erreur lors de l\'ouverture du PDF');
-      console.error(err);
     }
   };
 
@@ -64,7 +62,6 @@ function Factures({ setAuth }) {
       setInvoices(invoices.filter(inv => inv.id !== invoiceId));
     } catch (err) {
       alert('Erreur lors de la suppression');
-      console.error(err);
     }
   };
 
@@ -88,7 +85,6 @@ function Factures({ setAuth }) {
         success: false,
         message: 'Erreur lors du scan Gmail'
       });
-      console.error(err);
     } finally {
       setScanning(false);
     }
@@ -108,18 +104,14 @@ function Factures({ setAuth }) {
       setShowReconciliationModal(true);
     } catch (err) {
       alert(err.response?.data?.detail || 'Erreur lors du rapprochement');
-      console.error(err);
     } finally {
       setReconcilingInvoiceId(null);
     }
   };
 
   const confirmReconciliation = async (ligne) => {
-    console.log('Ligne sélectionnée:', ligne);
-    
     if (!ligne.transaction_id) {
       alert(`Erreur: ID de transaction manquant.\n\nDétails de la ligne:\n- Date: ${ligne.date}\n- Montant: ${ligne.amount}\n- Vendor: ${ligne.vendor}\n\nVeuillez contacter le support ou réessayer.`);
-      console.error('Transaction ID manquant pour la ligne:', ligne);
       return;
     }
 
@@ -145,7 +137,6 @@ function Factures({ setAuth }) {
       await loadInvoices();
     } catch (err) {
       alert(err.response?.data?.detail || 'Erreur lors de la confirmation');
-      console.error(err);
     }
   };
 
@@ -166,7 +157,6 @@ function Factures({ setAuth }) {
       alert(`✓ Rapprochement automatique terminé !\n\n${response.data.stats.auto_confirmed} rapprochement(s) confirmé(s)\n${response.data.stats.manual_review} nécessitent une revue manuelle`);
     } catch (err) {
       alert(err.response?.data?.detail || 'Erreur lors du rapprochement automatique');
-      console.error(err);
     } finally {
       setReconcilingAll(false);
     }

@@ -189,9 +189,8 @@ def _scan_invoices_task(user_id: int, db: Session):
     try:
         scanner = InvoiceScanner(user_id=user_id, db=db)
         stats = scanner.scan_and_process(max_emails=50)
-        print(f"\n[SCAN COMPLETE] Stats: {stats}")
-    except Exception as e:
-        print(f"[SCAN ERROR] {e}")
+    except Exception:
+        pass
     finally:
         db.close()
 

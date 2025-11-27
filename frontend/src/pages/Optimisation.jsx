@@ -39,7 +39,6 @@ function Optimisation({ setAuth }) {
       setTvaAnalysis(tvaRes.data);
     } catch (err) {
       setError(err.response?.data?.detail || 'Erreur lors du chargement de l\'analyse');
-      console.error(err);
     } finally {
       setLoading(false);
     }

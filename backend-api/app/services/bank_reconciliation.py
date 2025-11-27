@@ -12,11 +12,7 @@ class BankReconciliationService:
     """Service de rapprochement bancaire intelligent"""
     
     def __init__(self):
-        try:
-            self.groq_client = Groq(api_key=settings.GROQ_API_KEY)
-        except TypeError:
-            from groq import Client as GroqClient
-            self.groq_client = GroqClient(api_key=settings.GROQ_API_KEY)
+        self.groq_client = Groq(api_key=settings.GROQ_API_KEY)
         
         self.context_envoi = self._load_context("context_envoi.txt")
         self.context_reception = self._load_context("context_reception.txt")
@@ -28,8 +24,7 @@ class BankReconciliationService:
         try:
             with open(context_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except Exception as e:
-            print(f"[WARNING] Impossible de charger {filename}: {e}")
+        except Exception:
             return "Tu es un agent de rapprochement bancaire."
     
     def _load_prompt_template(self) -> str:
@@ -38,8 +33,7 @@ class BankReconciliationService:
         try:
             with open(prompt_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except Exception as e:
-            print(f"[WARNING] Impossible de charger prompt.txt: {e}")
+        except Exception:
             return "Facture: {{facture_json}}\n\nRelevé bancaire: {{releve_bancaire}}"
     
     def reconcile(
@@ -86,8 +80,7 @@ class BankReconciliationService:
             
             return result
         
-        except Exception as e:
-            print(f"[ERROR] Rapprochement bancaire: {e}")
+        except Exception:
             return None
     
     def auto_reconcile_invoice(
