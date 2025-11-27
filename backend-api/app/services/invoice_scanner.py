@@ -140,20 +140,23 @@ class InvoiceScanner:
             return None
     
     def _get_gmail_messages(self, service, max_results: int = 50) -> List[Dict]:
-        """Récupère les messages Gmail avec pièces jointes"""
+        """Récupère les messages Gmail avec pièces jointes (INBOX + SENT)"""
         try:
-            # Chercher les emails avec pièces jointes
-            results = service.users().messages().list(
+            emails = []
+            
+            # Scanner INBOX (factures reçues)
+            print("[SCAN] Scan INBOX (factures reçues)...")
+            inbox_results = service.users().messages().list(
                 userId='me',
                 labelIds=['INBOX'],
                 q='has:attachment',
                 maxResults=max_results
             ).execute()
             
-            messages = results.get('messages', [])
+            inbox_messages = inbox_results.get('messages', [])
+            print(f"[SCAN] {len(inbox_messages)} messages trouvés dans INBOX")
             
-            emails = []
-            for msg in messages:
+            for msg in inbox_messages:
                 msg_id = msg['id']
                 
                 # Récupérer le message complet
@@ -177,6 +180,47 @@ class InvoiceScanner:
                         'subject': subject,
                         'from': from_email,
                         'date': date,
+                        'type': 'entrante',  # Facture reçue
+                        'attachments': attachments
+                    })
+            
+            # Scanner SENT (factures envoyées)
+            print("[SCAN] Scan SENT (factures envoyées)...")
+            sent_results = service.users().messages().list(
+                userId='me',
+                labelIds=['SENT'],
+                q='has:attachment',
+                maxResults=max_results
+            ).execute()
+            
+            sent_messages = sent_results.get('messages', [])
+            print(f"[SCAN] {len(sent_messages)} messages trouvés dans SENT")
+            
+            for msg in sent_messages:
+                msg_id = msg['id']
+                
+                # Récupérer le message complet
+                message = service.users().messages().get(
+                    userId='me',
+                    id=msg_id,
+                    format='full'
+                ).execute()
+                
+                headers = message.get('payload', {}).get('headers', [])
+                subject = next((h['value'] for h in headers if h['name'] == 'Subject'), '')
+                to_email = next((h['value'] for h in headers if h['name'] == 'To'), '')
+                date = next((h['value'] for h in headers if h['name'] == 'Date'), '')
+                
+                # Extraire les pièces jointes
+                attachments = self._extract_attachments(service, msg_id, message.get('payload', {}))
+                
+                if attachments:
+                    emails.append({
+                        'id': msg_id,
+                        'subject': subject,
+                        'from': to_email,  # Pour les envoyées, le destinataire
+                        'date': date,
+                        'type': 'sortante',  # Facture envoyée
                         'attachments': attachments
                     })
             
@@ -300,6 +344,9 @@ class InvoiceScanner:
                         
                         # Créer l'entrée en base
                         print(f"    [DB] Enregistrement en base...")
+                        invoice_type = email.get('type', 'entrante')  # Utiliser le type de l'email
+                        print(f"    [TYPE] Type de facture: {invoice_type}")
+                        
                         new_invoice = Invoice(
                             user_id=self.user_id,
                             invoice_number=analysis.get('invoice_number'),
@@ -315,7 +362,7 @@ class InvoiceScanner:
                             file_name=file_info['file_name'],
                             email_id=email['id'],
                             email_subject=email['subject'],
-                            invoice_type='entrante'
+                            invoice_type=invoice_type
                         )
                         
                         self.db.add(new_invoice)

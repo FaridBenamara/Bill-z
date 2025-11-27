@@ -150,7 +150,7 @@ function Factures({ setAuth }) {
   };
 
   const reconcileAllInvoices = async () => {
-    if (!confirm('Lancer le rapprochement automatique pour toutes les factures ?\n\nLes correspondances avec une confiance ≥ 90% seront confirmées automatiquement.')) {
+    if (!confirm('Lancer le rapprochement automatique pour toutes les factures ?\n\nLes correspondances avec une confiance ≥ 85% seront confirmées automatiquement.')) {
       return;
     }
 

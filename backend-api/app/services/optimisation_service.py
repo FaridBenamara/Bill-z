@@ -4,6 +4,7 @@ Service d'optimisation fiscale et analyse comptable intégré
 import json
 from typing import Dict, List, Optional
 from pathlib import Path
+from datetime import datetime
 from groq import Groq
 from sqlalchemy.orm import Session
 
@@ -143,9 +144,13 @@ class OptimisationService:
             
             print(f"[OPTIMISATION] Analyse de {len(factures_data)} factures")
             
-            # Créer le prompt
-            prompt = self.prompt_template.replace("{{factures_json}}", factures_json)
+            # Créer le prompt avec la date du jour
+            today = datetime.now().strftime("%Y-%m-%d")
+            prompt = self.prompt_template.replace("{{date_aujourdhui}}", today)
+            prompt = prompt.replace("{{factures_json}}", factures_json)
             prompt = prompt.replace("{{rapprochements_json}}", rapprochements_json)
+            
+            print(f"[OPTIMISATION] Date du jour: {today}")
             
             # Appel à Groq
             response = self.groq_client.chat.completions.create(

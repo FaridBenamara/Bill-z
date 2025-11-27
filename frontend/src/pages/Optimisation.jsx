@@ -189,11 +189,155 @@ function Optimisation({ setAuth }) {
               </div>
             </div>
 
-            {/* Optimisations */}
+            {/* Optimisations Fiscales */}
+            {analysis.optimisations_fiscales && analysis.optimisations_fiscales.length > 0 && (
+              <div className="card">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  💰 Optimisations Fiscales
+                </h3>
+                <div className="space-y-4">
+                  {analysis.optimisations_fiscales.map((opt, index) => (
+                    <div key={index} className={`p-4 rounded-lg border ${
+                      opt.priorite === 'haute' ? 'bg-red-500/10 border-red-500/30' :
+                      opt.priorite === 'moyenne' ? 'bg-yellow-500/10 border-yellow-500/30' :
+                      'bg-blue-500/10 border-blue-500/30'
+                    }`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                            opt.priorite === 'haute' ? 'bg-red-500 text-white' :
+                            opt.priorite === 'moyenne' ? 'bg-yellow-500 text-white' :
+                            'bg-blue-500 text-white'
+                          }`}>
+                            {opt.priorite.toUpperCase()}
+                          </span>
+                          <span className="text-xs px-2 py-1 bg-muted rounded">{opt.categorie}</span>
+                        </div>
+                        {opt.economie_potentielle && (
+                          <span className="text-sm font-bold text-green-500">
+                            💰 {opt.economie_potentielle}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-semibold text-foreground mb-1">{opt.titre}</h4>
+                      <p className="text-sm text-muted-foreground">{opt.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions Prioritaires */}
+            {analysis.actions_prioritaires && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Factures à payer */}
+                {analysis.actions_prioritaires.factures_a_payer && analysis.actions_prioritaires.factures_a_payer.length > 0 && (
+                  <div className="card">
+                    <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                      ⚠️ Factures à payer
+                      <span className="text-sm font-normal text-muted-foreground">
+                        ({analysis.actions_prioritaires.factures_a_payer.length})
+                      </span>
+                    </h3>
+                    <div className="space-y-3">
+                      {analysis.actions_prioritaires.factures_a_payer.map((facture, index) => (
+                        <div key={index} className={`p-3 rounded-lg border ${
+                          facture.urgence === 'critique' ? 'bg-red-500/10 border-red-500' :
+                          facture.urgence === 'haute' ? 'bg-orange-500/10 border-orange-500' :
+                          'bg-blue-500/10 border-blue-500'
+                        }`}>
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="font-semibold text-foreground">{facture.fournisseur}</div>
+                            <span className={`text-xs px-2 py-1 rounded font-semibold ${
+                              facture.urgence === 'critique' ? 'bg-red-500 text-white' :
+                              facture.urgence === 'haute' ? 'bg-orange-500 text-white' :
+                              'bg-blue-500 text-white'
+                            }`}>
+                              {facture.urgence}
+                            </span>
+                          </div>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <div>Montant: <span className="font-semibold text-foreground">{facture.montant.toFixed(2)} €</span></div>
+                            <div>Échéance: {new Date(facture.date_echeance).toLocaleDateString('fr-FR')}</div>
+                            {facture.jours_retard > 0 && (
+                              <div className="text-red-500 font-semibold">
+                                ⚠️ Retard de {facture.jours_retard} jours
+                              </div>
+                            )}
+                            <div className="text-xs italic mt-2">{facture.raison}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Clients à relancer */}
+                {analysis.actions_prioritaires.clients_a_relancer && analysis.actions_prioritaires.clients_a_relancer.length > 0 && (
+                  <div className="card">
+                    <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                      📞 Clients à relancer
+                      <span className="text-sm font-normal text-muted-foreground">
+                        ({analysis.actions_prioritaires.clients_a_relancer.length})
+                      </span>
+                    </h3>
+                    <div className="space-y-3">
+                      {analysis.actions_prioritaires.clients_a_relancer.map((client, index) => (
+                        <div key={index} className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="font-semibold text-foreground">{client.client}</div>
+                            <span className="text-xs px-2 py-1 rounded bg-yellow-500 text-white font-semibold">
+                              {client.jours_impaye}j
+                            </span>
+                          </div>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <div>Montant: <span className="font-semibold text-foreground">{client.montant.toFixed(2)} €</span></div>
+                            <div>Émission: {new Date(client.date_emission).toLocaleDateString('fr-FR')}</div>
+                            <div className="mt-2">
+                              <span className="text-xs px-2 py-1 rounded bg-orange-500 text-white">
+                                {client.action_recommandee}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Conseils de trésorerie */}
+            {analysis.conseils_tresorerie && analysis.conseils_tresorerie.length > 0 && (
+              <div className="card">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  💡 Conseils de trésorerie
+                </h3>
+                <div className="space-y-3">
+                  {analysis.conseils_tresorerie.map((conseil, index) => (
+                    <div key={index} className={`p-4 rounded-lg border ${
+                      conseil.type === 'alerte' ? 'bg-red-500/10 border-red-500/30' :
+                      conseil.type === 'conseil' ? 'bg-blue-500/10 border-blue-500/30' :
+                      'bg-green-500/10 border-green-500/30'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">
+                          {conseil.type === 'alerte' ? '⚠️' : conseil.type === 'conseil' ? '💡' : '✨'}
+                        </span>
+                        <h4 className="font-semibold text-foreground">{conseil.titre}</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{conseil.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Optimisations legacy */}
             {analysis.optimisations && analysis.optimisations.length > 0 && (
               <div className="card">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
-                  💡 Recommandations d'optimisation
+                  💡 Recommandations générales
                 </h3>
                 <ul className="space-y-3">
                   {analysis.optimisations.map((opt, index) => (

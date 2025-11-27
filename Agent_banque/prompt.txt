@@ -1,34 +1,65 @@
-Voici les informations extraites de la facture :
+Voici les informations de la facture à rapprocher :
 
-### FACTURE_JSON
+### FACTURE
 {{facture_json}}
 
-Voici les lignes du relevé bancaire :
+Voici les transactions bancaires disponibles :
 
-### RELEVE_BANCAIRE
+### TRANSACTIONS BANCAIRES
 {{releve_bancaire}}
 
-Ta mission :
-Effectuer un rapprochement bancaire approximatif en utilisant :
-- la similarité fournisseur,
-- l’écart de montant,
-- la proximité de date.
+═══════════════════════════════════════════════════════════════════
 
-Important :
-- Le champ "invoice_type" fourni dans la facture indique s’il s’agit d’une facture envoyée ou reçue.
-- Pour une facture reçue : les montants bancaires doivent être comparés en valeur absolue.
-- Le signe négatif d'une transaction n’est jamais une différence.
-- La devise ne doit pas être prise en compte.
+MISSION : RAPPROCHEMENT BANCAIRE INTELLIGENT
 
-Une ligne est correspondante si :
-- la similarité fournisseur est suffisante (≥ 0.60),
-ET
-- le montant ou la date sont rapprochés.
+Analyse chaque transaction bancaire et identifie celle(s) qui correspondent à la facture.
 
-Pour chaque ligne correspondante :
-- liste les différences constatées,
-- indique les écarts chiffrés dans "details_differences",
-- calcule la similarité fournisseur,
-- calcule le niveau de confiance.
+ÉTAPES D'ANALYSE :
 
-Retourne uniquement le JSON demandé dans le contexte système.
+1. IDENTIFICATION DU TYPE
+   - Vérifie le champ "invoice_type" de la facture
+   - Facture "reçue" → cherche transactions NÉGATIVES (débits)
+   - Facture "envoyée" → cherche transactions POSITIVES (crédits)
+
+2. ANALYSE FOURNISSEUR/CLIENT
+   - Compare le nom du fournisseur avec le "vendor" de chaque transaction
+   - Utilise un matching flou intelligent
+   - Tolère les variations (SARL, SAS, abréviations, etc.)
+   - Calcule un score de similarité (0.0 à 1.0)
+   - Seuil minimum : 0.50
+
+3. ANALYSE MONTANT
+   - Pour facture reçue : compare montant_facture avec ABS(transaction.amount)
+   - Pour facture envoyée : compare montant_facture avec transaction.amount
+   - Le signe négatif d'un débit n'est PAS une différence
+   - Calcule l'écart absolu en euros
+   - Tolère jusqu'à 10€ d'écart
+
+4. ANALYSE TEMPORELLE
+   - Compare la date facture (YYYY-MM-DD) avec date transaction (YYYY-MM)
+   - Calcule l'écart en jours
+   - Tolère jusqu'à 3 mois de décalage
+
+5. CALCUL DU NIVEAU DE CONFIANCE
+   Utilise la formule pondérée :
+   - Similarité fournisseur : 40%
+   - Précision montant : 40%
+   - Proximité date : 20%
+   
+   Applique les barèmes définis dans le contexte système.
+
+6. SÉLECTION DES CORRESPONDANCES
+   - Retiens TOUTES les transactions avec :
+     * Similarité fournisseur ≥ 0.50
+     * ET (écart montant ≤ 10€ OU écart date ≤ 3 mois)
+   - Trie par niveau de confiance décroissant
+   - Indique clairement les différences constatées
+
+IMPORTANT :
+- Ignore complètement la devise
+- Le signe négatif pour un débit est NORMAL
+- Sois précis dans le calcul du niveau de confiance
+- Liste toutes les différences pertinentes (sauf devise et signe)
+
+RÉSULTAT ATTENDU :
+Retourne UNIQUEMENT le JSON structuré défini dans le contexte système, sans aucun texte additionnel.

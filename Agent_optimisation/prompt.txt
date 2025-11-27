@@ -1,37 +1,101 @@
-Voici la liste des factures normalisées :
+DATE DU JOUR : {{date_aujourdhui}}
+
+Voici les factures de l'entreprise :
 
 ### FACTURES
 {{factures_json}}
 
-Voici la liste des rapprochements bancaires normalisés :
+Voici l'état des rapprochements bancaires :
 
 ### RAPPROCHEMENTS
 {{rapprochements_json}}
 
-Analyse ces données et génère :
+═══════════════════════════════════════════════════════════════════
+MISSION : ANALYSE FINANCIÈRE COMPLÈTE ET RECOMMANDATIONS STRATÉGIQUES
+═══════════════════════════════════════════════════════════════════
 
-1. Les statistiques globales, incluant notamment :
-   - le nombre total de factures,
-   - le nombre de factures reçues et envoyées (selon invoice_type),
-   - le total des montants,
-   - le total rapproché et non rapproché,
-   - le taux de rapprochement,
-   - le nombre de fournisseurs distincts.
+En tant qu'expert-comptable et conseiller fiscal IA, effectue une analyse approfondie et fournis des recommandations actionnables.
 
-2. Les listes de factures rapprochées et non rapprochées.
+ÉTAPES D'ANALYSE :
 
-3. L'analyse détaillée par fournisseur :
-   - nombre de factures,
-   - total des dépenses,
-   - moyenne,
-   - facture la plus élevée,
-   - anomalies regroupées sans doublons.
+1. STATISTIQUES FINANCIÈRES
+   - Calcule toutes les statistiques globales
+   - Identifie les tendances (revenus vs dépenses)
+   - Analyse le taux de rapprochement
 
-4. Les anomalies détectées au niveau global, en français uniquement et dédupliquées.
+2. OPTIMISATIONS FISCALES CONCRÈTES
+   Identifie et recommande :
+   
+   a) DÉDUCTIONS FISCALES
+      - Analyse les catégories de dépenses
+      - Identifie les charges déductibles
+      - Suggère des optimisations de timing
+      - Estime les économies potentielles
+   
+   b) TVA
+      - Vérifie la récupération de TVA
+      - Détecte les anomalies de taux
+      - Suggère des régularisations
+   
+   c) AMORTISSEMENTS
+      - Identifie les achats amortissables
+      - Recommande les stratégies d'amortissement
+   
+   d) CHARGES PROFESSIONNELLES
+      - Liste les frais professionnels déductibles
+      - Optimise la répartition des charges
 
-5. Les optimisations et recommandations financières (phrases courtes et utiles).
+3. GESTION DES PAIEMENTS (FACTURES REÇUES)
+   Pour CHAQUE facture reçue NON rapprochée :
+   - Calcule les jours de retard par rapport à date_echeance
+   - Détermine l'urgence (critique/haute/normale)
+   - Priorise par montant et urgence
+   - Fournis une raison claire
+   
+   Formule : jours_retard = date_aujourdhui - date_echeance
+   
+   Urgence :
+   - critique : > 30 jours de retard OU montant > 1000€
+   - haute : 15-30 jours de retard
+   - normale : < 15 jours ou pas encore échue
 
-6. Un résumé final clair en une phrase en français.
+4. RELANCE CLIENTS (FACTURES ENVOYÉES)
+   Pour CHAQUE facture envoyée NON rapprochée :
+   - Calcule les jours d'impayé (date_emission + 30 jours standard)
+   - Détermine l'action recommandée
+   - Identifie les clients récurrents en retard
+   
+   Actions :
+   - relance amiable : 30-45 jours d'impayé
+   - relance ferme : 45-60 jours d'impayé
+   - mise en demeure : > 60 jours d'impayé
 
-Respecte strictement le format JSON défini dans le contexte système.
-Ne génère aucun texte en dehors du JSON final.
+5. CONSEILS DE TRÉSORERIE
+   Analyse et alerte sur :
+   - Déséquilibre revenus/dépenses
+   - Factures importantes non rapprochées
+   - Retards de paiement récurrents
+   - Opportunités de négociation
+   - Optimisation du cash-flow
+
+6. DÉTECTION D'OPPORTUNITÉS
+   - Fournisseurs à fort volume → négocier des remises
+   - Dépenses récurrentes → chercher des forfaits
+   - Catégories anormalement élevées → analyser
+   - Factures suspectes ou dupliquées
+
+7. ANOMALIES
+   - Regroupe et déduplique les anomalies
+   - Traduis en français
+   - Priorise par impact
+
+IMPORTANT :
+- Sois CONCRET et ACTIONNABLE
+- Fournis des MONTANTS et DATES précis
+- Priorise clairement (haute/moyenne/basse)
+- Base-toi UNIQUEMENT sur les données fournies
+- Calcule précisément les jours de retard/impayé
+- Ne fais PAS de suppositions
+
+RÉSULTAT ATTENDU :
+Retourne UNIQUEMENT le JSON structuré défini dans le contexte système, sans aucun texte additionnel.

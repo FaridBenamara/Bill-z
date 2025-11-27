@@ -281,8 +281,8 @@ async def reconcile_all_invoices(
                 if 'transaction_id' in best_match:
                     stats["matched"] += 1
                     
-                    # Auto-confirmer si confiance >= 0.9
-                    if confidence >= 0.9:
+                    # Auto-confirmer si confiance >= 0.85 (85%)
+                    if confidence >= 0.85:
                         transaction = db.query(Transaction).filter(
                             Transaction.id == best_match['transaction_id']
                         ).first()
@@ -310,7 +310,7 @@ async def reconcile_all_invoices(
                         "invoice_number": invoice.invoice_number,
                         "transaction_id": best_match.get('transaction_id'),
                         "confidence": confidence,
-                        "auto_confirmed": confidence >= 0.9,
+                        "auto_confirmed": confidence >= 0.85,
                         "details": best_match
                     })
                 else:
