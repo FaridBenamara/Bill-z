@@ -78,53 +78,54 @@ flowchart TB
     
     Auth --> GmailAPI[📧 Gmail API<br/>service.users.messages.list<br/>Label: INBOX<br/>Pagination automatique<br/>Max 100 par page]
     
-    GmailAPI --> Filter[🔍 Filtrage Emails<br/>Avec pièces jointes uniquement<br/>Parcours récursif parts<br/>Détection attachments]
+    GmailAPI --> Filter[🔍 Filtrage Emails<br/>Avec pièces jointes uniquement<br/>Parcours récursif des parts<br/>Détection des attachments]
     
     Filter --> Loop{📬 Pour chaque email}
     
-    Loop --> ExtractAtt[📎 Extraction Attachments<br/>Base64 decode<br/>Sauvegarde temp/<br/>filename, data binary]
+    Loop --> ExtractAtt[📎 Extraction des pièces jointes<br/>Base64 decode<br/>Sauvegarde temp/<br/>filename + binaire]
     
-    ExtractAtt --> CheckType{📄 Type fichier?}
+    ExtractAtt --> CheckType{📄 Type de fichier ?}
     
     CheckType -->|PDF| PDFExtract[📖 Extraction PDF<br/>utils_facture.py<br/>pdfplumber.open<br/>extract_text_from_pdf<br/>Page par page]
     
-    CheckType -->|Image JPG/PNG| ImageExtract[🖼️ Extraction Image<br/>utils_facture.py<br/>extract_text_with_pixtral<br/>Encode base64<br/>Mistral Pixtral API]
+    CheckType -->|Image JPG/PNG| ImageExtract[🖼️ Extraction Image<br/>utils_facture.py<br/>extract_text_with_pixtral<br/>Encodage base64<br/>Mistral Pixtral API]
     
     PDFExtract --> TextClean[🧹 Nettoyage Texte<br/>strip, trim<br/>Normalisation<br/>Texte brut]
     ImageExtract --> TextClean
     
-    TextClean --> PreparePrompt[📝 Préparation Prompt<br/>load_prompt_and_context<br/>Charge context.txt<br/>Charge prompt.txt<br/>Remplace {{FACTURE_BRUTE}}]
+    TextClean --> PreparePrompt[📝 Préparation du Prompt<br/>load_prompt_and_context<br/>Charge context.txt<br/>Charge prompt.txt<br/>Remplace FACTURE_BRUTE]
     
-    PreparePrompt --> SystemContext[📋 Context System<br/>Agent spécialisé factures<br/>Règles strictes:<br/>- Ne pas inventer<br/>- null si absent<br/>- Détection anomalies<br/>- Catégorisation métier]
+    PreparePrompt --> SystemContext[📋 Contexte Système<br/>Agent spécialisé factures<br/>Règles strictes :<br/>- Ne pas inventer<br/>- null si absent<br/>- Détection anomalies<br/>- Catégorisation métier]
     
-    PreparePrompt --> UserPrompt[💬 Prompt User<br/>Texte brut facture<br/>Instructions extraction<br/>Format JSON attendu]
+    PreparePrompt --> UserPrompt[💬 Prompt Utilisateur<br/>Texte brut facture<br/>Instructions d'extraction<br/>Format JSON attendu]
     
-    SystemContext --> GroqAnalyze[🤖 Groq API - Analyse<br/>analyze_text<br/>model: MODEL_NAME_analyse<br/>response_format: json_object<br/>Temperature: default]
+    SystemContext --> GroqAnalyze[🤖 Groq API - Analyse<br/>analyze_text<br/>model: MODEL_NAME_analyse<br/>response_format: json_object]
     UserPrompt --> GroqAnalyze
     
-    GroqAnalyze --> ParseJSON{📥 JSON valide?}
+    GroqAnalyze --> ParseJSON{📥 JSON valide ?}
     
     ParseJSON -->|✅ Oui| InvoiceData[📊 Données Facture<br/>invoice_number<br/>invoice_date, due_date<br/>supplier, client<br/>amounts HT/TVA/TTC<br/>category, anomalies<br/>confidence_global]
     
     ParseJSON -->|❌ Non| ErrorLog[⚠️ Log Erreur<br/>Affiche raw_content<br/>Skip cette facture]
     
-    InvoiceData --> CheckToken{🔑 Token Backend?}
+    InvoiceData --> CheckToken{🔑 Token Backend présent ?}
     
-    CheckToken -->|✅ Oui| SendBackend[📤 Envoi Backend<br/>send_to_backend.py<br/>POST /api/invoices/upload<br/>Multipart: PDF + JSON<br/>Bearer Token Auth]
+    CheckToken -->|✅ Oui| SendBackend[📤 Envoi Backend<br/>send_to_backend.py<br/>POST /api/invoices/upload<br/>Multipart PDF + JSON<br/>Bearer Token Auth]
     
-    CheckToken -->|❌ Non| LogOnly[📝 Log uniquement<br/>Aucun upload<br/>Données conservées localement]
+    CheckToken -->|❌ Non| LogOnly[📝 Log uniquement<br/>Aucun upload<br/>Conservation locale]
     
-    SendBackend --> BackendAPI[🖥️ Backend FastAPI<br/>Upload endpoint<br/>Validation données<br/>Sauvegarde PDF<br/>Insertion PostgreSQL]
+    SendBackend --> BackendAPI[🖥️ Backend FastAPI<br/>Validation données<br/>Sauvegarde PDF<br/>Insertion PostgreSQL]
     
-    BackendAPI --> Cleanup[🗑️ Nettoyage<br/>Supprime temp/filename<br/>Garde uniquement en DB]
+    BackendAPI --> Cleanup[🗑️ Nettoyage<br/>Suppression temp/<filename><br/>Données en DB]
     
-    Cleanup --> NextEmail{📬 Email suivant?}
+    Cleanup --> NextEmail{📬 Email suivant ?}
     ErrorLog --> NextEmail
     LogOnly --> NextEmail
     
     NextEmail -->|Oui| Loop
-    NextEmail -->|Non| End([✅ Fin Traitement])
+    NextEmail -->|Non| End([✅ Fin du traitement])
     
+    %% Styles
     style Start fill:#90EE90
     style GmailAPI fill:#FFD700
     style PDFExtract fill:#87CEEB
@@ -134,6 +135,7 @@ flowchart TB
     style BackendAPI fill:#DDA0DD
     style ErrorLog fill:#FFB6C1
     style End fill:#90EE90
+
 ```
 
 ## Outils et technologies utilisés
